@@ -7,7 +7,7 @@ function App() {
   const fetchMessage = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:4001/api/message');
+      const response = await fetch('/api/message');
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
