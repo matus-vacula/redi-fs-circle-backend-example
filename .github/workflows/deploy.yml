@@ -18,6 +18,10 @@ jobs:
           with:
             ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
         
+        - name: Add SSH known hosts
+          run: |
+            ssh-keyscan -t ed25519 @85.215.157.215
+
         - name: Install dependencies
           run: npm install
         - name: Build frontend
