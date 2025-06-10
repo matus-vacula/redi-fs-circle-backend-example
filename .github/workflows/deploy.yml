@@ -31,7 +31,7 @@ jobs:
 
         - name: Upload files to server
           run: |
-            rsync -r packages/frontend/build/ --group www-data --delete redi@85.215.157.215:/var/www/html/
+            rsync -r packages/frontend/build/ --delete redi@85.215.157.215:/var/www/html/
 
         - name: Set permissions
           run: |
