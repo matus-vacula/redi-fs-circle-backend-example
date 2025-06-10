@@ -35,8 +35,8 @@ jobs:
         
         - name: Set permissions
           run: |
-            ssh redi@85.215.157.215 -t "chown -R redi:www-data /var/www/html/"
+            ssh redi@85.215.157.215 -t "chown -R redi:www-data /var/www/html/*"
 
         - name: Reload web server
           run: |
-            ssh redi@85.215.157.215 -t "sude service nginx reload"
+            ssh redi@85.215.157.215 -t "sudo service nginx reload"
