@@ -1,9 +1,16 @@
 name: Deploy to Server
 
+# This part means that the workflow will run on pushes to the "deployment" branch.
+# You probably want to do this on the main branch
+# but I didn't want to mess with what was already shared as a sample monorepo for backend and frontend.
 on:
     push:
         branches:
             - deployment
+
+env:
+    # This is currently set to to "fullstackcircle.org" in the GitHub repository variables
+    SERVER_HOSTNAME: ${{ vars.SERVER_HOSTNAME }}
 
 jobs:
     deploy:
@@ -11,32 +18,44 @@ jobs:
         steps:
         - name: Checkout code
           uses: actions/checkout@v4
+
+        # This step is necessary to ensure that the SSH key is available for subsequent steps
+        # The SSH key is stored in GitHub Secrets as SSH_PRIVATE_KEY
         - name: Set up SSH key
           uses: webfactory/ssh-agent@v0.8.0
           with:
             ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        
+        # This step is necessary to ensure that the host key of the server is added to the known hosts file
+        # Without this the SSH connection will fail due to host verification
         - name: Add SSH known hosts
-          run: |
-            ssh-keyscan -t ed25519 85.215.157.215 >> ~/.ssh/known_hosts
+          run: ssh-keyscan -t ed25519 $SERVER_HOSTNAME >> ~/.ssh/known_hosts
+
         - name: Install dependencies
           run: npm install
         - name: Build frontend
           run: npm run build -w frontend
+        
+        # Pay attention to how the backend is built in the package.json file
         - name: Build backend
           run: npm run build -w backend
+
         - name: Upload files to server
           run: |
-            rsync -r packages/frontend/build/ --delete redi@85.215.157.215:/var/www/html/
-            rsync -r packages/backend/build/ --delete redi@85.215.157.215:/var/www/api/
-        
+            rsync -r packages/frontend/build/ --delete redi@$SERVER_HOSTNAME:/var/www/html/
+            rsync -r packages/backend/build/ --delete redi@$SERVER_HOSTNAME:/var/www/api/
+
         - name: Set permissions
           run: |
-            ssh redi@85.215.157.215 -t "chown -R redi:www-data /var/www/html/*"
-            ssh redi@85.215.157.215 -t "chown -R redi:www-data /var/www/api/*"
-
+            ssh redi@$SERVER_HOSTNAME -t "chown -R redi:www-data /var/www/html/*"
+            ssh redi@$SERVER_HOSTNAME -t "chown -R redi:www-data /var/www/api/*"
+        
+        # Nginx is a web server that serves the frontend files. We need to reload it to apply the changes.
         - name: Reload web server
           run: |
-            ssh redi@85.215.157.215 -t "sudo service nginx reload"
+            ssh redi@$SERVER_HOSTNAME -t "sudo service nginx reload"
+
+        # Supervisor is a process control system that manages the backend API. We need to restart it to apply the changes.
         - name: Restart API
           run: |
-            ssh redi@85.215.157.215 -t "sudo supervisorctl restart api"
+            ssh redi@$SERVER_HOSTNAME -t "sudo supervisorctl restart api"
