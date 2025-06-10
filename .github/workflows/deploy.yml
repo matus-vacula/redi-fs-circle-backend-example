@@ -31,5 +31,5 @@ jobs:
 
         - name: Copy files via SCP
           run: |
-            rsync -r frontend/build/ redi@85.215.157.215:/home/redi/html/
-            rsync -r backend/dist/ redi@85.215.157.215:/home/redi/backend/
+            rsync -r packages/frontend/build/ redi@85.215.157.215:/home/redi/html/
+            rsync -r packages/backend/build/ redi@85.215.157.215:/home/redi/backend/
