@@ -29,7 +29,10 @@ jobs:
         - name: Build backend
           run: npm run build -w backend
 
-        - name: Copy files via SCP
+        - name: Upload files to server
           run: |
             rsync -r packages/frontend/build/ --group www-data --delete redi@85.215.157.215:/var/www/html/
-            rsync -r packages/backend/build/ --group www-data --delete redi@85.215.157.215:/var/www/backend/
+
+        - name: Set permissions
+          run: |
+            ssh redi@85.215.157.215 -t "chown -R redi:www-data /var/www/html/"
