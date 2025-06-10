@@ -8,27 +8,22 @@ on:
 jobs:
     deploy:
         runs-on: ubuntu-latest
-
         steps:
         - name: Checkout code
           uses: actions/checkout@v4
-
         - name: Set up SSH key
           uses: webfactory/ssh-agent@v0.8.0
           with:
             ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        
         - name: Add SSH known hosts
           run: |
             ssh-keyscan -t ed25519 85.215.157.215 >> ~/.ssh/known_hosts
-
         - name: Install dependencies
           run: npm install
         - name: Build frontend
           run: npm run build -w frontend
         - name: Build backend
           run: npm run build -w backend
-
         - name: Upload files to server
           run: |
             rsync -r packages/frontend/build/ --delete redi@85.215.157.215:/var/www/html/
@@ -42,3 +37,6 @@ jobs:
         - name: Reload web server
           run: |
             ssh redi@85.215.157.215 -t "sudo service nginx reload"
+        - name: Restart API
+          run: |
+            ssh redi@85.215.157.215 -t "sudo supervisorctl restart api"
