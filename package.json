@@ -2,7 +2,7 @@
     "name": "my-app",
     "private": true,
     "workspaces": [
-      "backend",
-      "frontend"
+        "packages/backend",
+        "packages/frontend"
     ]
-  }
+}

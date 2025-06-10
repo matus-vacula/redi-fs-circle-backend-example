@@ -1,0 +1,31 @@
+name: Deploy to Server
+
+on:
+    push:
+        branches:
+            - deploy
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Set up SSH key
+          uses: webfactory/ssh-agent@v0.8.0
+          with:
+            ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        
+        - name: Install dependencies
+          run: npm install
+        - name: Build frontend
+          run: npm run build -w frontend
+        - name: Build backend
+          run: npm run build -w backend
+
+        - name: Copy files via SCP
+          run: |
+            rsync -r frontend/build/ redi@85.215.157.215:/home/redi/html/
+            rsync -r backend/dist/ redi@85.215.157.215:/home/redi/backend/
